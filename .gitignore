@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+
+# Django local data
+backend/db.sqlite3
+
+# Local vector index
+faiss_index.bin
+backend/faiss_index.bin
+
+# OS/editor
+.DS_Store
+.vscode/
