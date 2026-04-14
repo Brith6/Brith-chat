@@ -1,68 +1,112 @@
-# Chatbot Project
+# Local RAG Chatbot (Django + Streamlit + Ollama)
 
-This project consists of a Django backend integrated with AI services (using Ollama) and a Python-based frontend.
+This project is a local document-question answering chatbot:
+
+- Backend API: Django + Django REST Framework
+- Retrieval: FAISS + Sentence Transformers embeddings
+- OCR/PDF extraction: Tesseract + Pillow + PyPDF2
+- UI: Streamlit
+- LLM inference: Ollama (local model, currently set to gemma2)
+
+## Project Structure
+
+- backend/: Django project and Streamlit frontend
+- backend/core/ai_services.py: document processing, embeddings, FAISS, Ollama call
+- backend/frontend.py: Streamlit chat interface
 
 ## Prerequisites
 
-- **Python 3.8+**
-- **[Ollama](https://ollama.com/)**: Required for local AI model inference.
+1. Python 3.10 or newer
+2. Ollama installed and running
+3. Tesseract OCR installed on your system
 
-## Setup Instructions
+### Install Tesseract
 
-1. **Set up a Python virtual environment:**
-   From the root of the project (`/home/brith/Epitech/chatbot`):
-   ```bash
+Ubuntu/Debian:
+
+   sudo apt update
+   sudo apt install -y tesseract-ocr
+
+macOS (Homebrew):
+
+   brew install tesseract
+
+Windows:
+
+- Install Tesseract from the official installer, then add it to PATH.
+
+## Quick Start
+
+From the project root:
+
+1. Create and activate a virtual environment
+
+Linux/macOS:
+
    python3 -m venv .venv
    source .venv/bin/activate
-   ```
 
-2. **Install dependencies:**
-   Make sure to install Django and any required packages (e.g., via `pip install Django requests`). If you have a `requirements.txt`, run:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Windows PowerShell:
 
-3. **Apply Database Migrations:**
-   Navigate to the backend directory and set up the SQLite database:
-   ```bash
+   py -m venv .venv
+   .venv\Scripts\Activate.ps1
+
+2. Install Python dependencies
+
+   pip install --upgrade pip
+   pip install django djangorestframework streamlit requests numpy pillow pytesseract PyPDF2 sentence-transformers faiss-cpu
+
+3. Run database migrations
+
    cd backend
    python manage.py migrate
-   ```
 
-## Running the Project
+4. Pull and run the Ollama model used by this project
 
-### 1. Start Ollama
-Make sure the Ollama service is running globally and pull your target model (e.g., `llama3` or `mistral`):
-```bash
-ollama run llama3
-```
+   ollama pull gemma2
 
-### 2. Start the Django Backend Server
-With your virtual environment activated, navigate to the `backend` directory and start the Django development server:
-```bash
-cd backend
-python manage.py runserver
-```
+You can keep Ollama running in another terminal with:
 
-### 3. Start the Frontend
-Depending on the library used for `frontend.py` (e.g., Streamlit, Gradio), run the frontend script in a separate terminal:
-```bash
-# If it's a Streamlit app:
-streamlit run backend/frontend.py
+   ollama run gemma2
 
-# Or if it's a plain Python script:
-python backend/frontend.py
-```
+## Run the Application
 
-## How to Test the Project
+Use 2 terminals (with the same virtual environment activated).
 
-To run the automated tests for the Django application (which checks the endpoints and AI service integrations), use Django's testing framework.
+Terminal 1, Django API:
 
-Ensure you are in the `backend/` directory and your virtual environment is activated:
+   cd backend
+   python manage.py runserver
 
-```bash
-cd backend
-python manage.py test core
-```
+Terminal 2, Streamlit UI:
 
-This command will automatically discover and run all the test cases defined in `backend/core/tests.py`.
+   streamlit run backend/frontend.py
+
+Then open the Streamlit URL shown in terminal (usually http://localhost:8501).
+
+## How to Use
+
+1. Upload a PDF/JPG/PNG from the sidebar.
+2. Wait for indexing to complete.
+3. Ask questions in the chat box.
+4. Use the clear button to reset indexed data.
+
+## API Endpoints (Django)
+
+- POST /api/upload/
+- POST /api/chat/
+- POST /api/clear/
+
+Default backend URL used by Streamlit: http://127.0.0.1:8000
+
+## Run Tests
+
+From backend directory:
+
+   python manage.py test core
+
+## Notes and Troubleshooting
+
+- If you see connection errors in Streamlit, verify Django is running on port 8000.
+- If OCR on images fails, verify Tesseract is correctly installed and available in PATH.
+- If LLM replies fail, verify Ollama is running and gemma2 is available.
