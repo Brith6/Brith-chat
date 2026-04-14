@@ -10,7 +10,7 @@ import requests
 from .models import Document, DocumentChunk
 
 print("Loading Embedding Model...")
-# We STILL need this small model to convert text to vectors for FAISS
+# Convert text to vectors for FAISS
 embedder = SentenceTransformer('all-MiniLM-L6-v2') 
 
 # --- PERSISTENCE SETUP ---
@@ -22,7 +22,6 @@ if os.path.exists(FAISS_INDEX_PATH):
 else:
     vector_db = faiss.IndexFlatL2(EMBEDDING_DIMENSION)
 
-#[KEEP YOUR 'extract_text_from_file' FUNCTION EXACTLY THE SAME]
 def extract_text_from_file(file_path, file_type):
     text = ""
     if file_type in ['image/jpeg', 'image/png']:
@@ -35,7 +34,6 @@ def extract_text_from_file(file_path, file_type):
                 text += page.extract_text() + "\n"
     return text
 
-#[KEEP YOUR 'process_and_store_document' FUNCTION EXACTLY THE SAME]
 def process_and_store_document(text, file_name):
     if not text.strip():
         return
@@ -54,7 +52,6 @@ def process_and_store_document(text, file_name):
             faiss_index_id=start_id + i
         )
 
-# [UPDATE THIS FUNCTION TO USE DEEPSEEK via OLLAMA]
 def ask_chatbot(question):
     if vector_db.ntotal == 0:
         return "Je n'ai pas encore de documents dans ma base de données. Veuillez d'abord uploader un fichier."
@@ -74,7 +71,7 @@ def ask_chatbot(question):
                 continue
     context = "\n\n".join(retrieved_chunks)
     
-    # 3. Create a clean French Prompt
+    # 3. Create a clean Prompt
     prompt = f"""Tu es un assistant IA professionnel. Réponds à la question en utilisant UNIQUEMENT le contexte fourni ci-dessous. Ne rajoute pas d'informations extérieures.
     
 Contexte: 
@@ -86,17 +83,16 @@ Question: {question}
     # 4. Send to local Ollama DeepSeek API
     ollama_url = "http://localhost:11434/api/generate"
     payload = {
-        "model": "gemma2", # The model you just downloaded
+        "model": "gemma2", # The model
         "prompt": prompt,
         "stream": False # Tells Ollama to wait and send the complete answer at once
     }
     
     try:
         response = requests.post(ollama_url, json=payload)
-        response.raise_for_status() # Check for errors
+        response.raise_for_status() 
         
-        # DeepSeek-R1 sometimes includes its "thinking process" inside <think> tags. 
-        # This code removes the thinking tags so the user only sees the final answer.
+        # Removes the thinking tags so the user only sees the final answer.
         full_response = response.json()["response"]
         if "</think>" in full_response:
             final_answer = full_response.split("</think>")[-1].strip()
@@ -110,8 +106,6 @@ def clear_database():
     """Clears the SQLite Database, FAISS RAM index, and FAISS disk file."""
     try:
         # 1. Delete all text from the Django Database
-        # (Because we used 'CASCADE' in our models, deleting Documents 
-        # automatically deletes all the connected DocumentChunks)
         Document.objects.all().delete()
         
         # 2. Clear the FAISS index currently running in RAM

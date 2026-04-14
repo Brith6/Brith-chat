@@ -23,7 +23,6 @@ class UploadDocumentView(APIView):
             text = extract_text_from_file(file_path, file_type)
             
             # 2. Add to Vector DB
-            # process_and_store_document(text)
             process_and_store_document(text, file_obj.name)
             
             return Response({"message": f"Successfully processed {file_name}. Database updated."})
@@ -40,7 +39,6 @@ class ChatbotQueryView(APIView):
         if not question:
             return Response({"error": "No question provided."}, status=400)
 
-        # Ask the AI
         answer = ask_chatbot(question)
         
         return Response({
