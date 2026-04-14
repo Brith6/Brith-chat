@@ -17,3 +17,6 @@ backend/faiss_index.bin
 # OS/editor
 .DS_Store
 .vscode/
+
+# Archives
+*.zip
