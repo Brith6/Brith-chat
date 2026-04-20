@@ -36,10 +36,11 @@ class UploadDocumentView(APIView):
 class ChatbotQueryView(APIView):
     def post(self, request, *args, **kwargs):
         question = request.data.get('question')
+        history = request.data.get('history', [])
         if not question:
             return Response({"error": "No question provided."}, status=400)
 
-        answer = ask_chatbot(question)
+        answer = ask_chatbot(question, history)
         
         return Response({
             "question": question,
